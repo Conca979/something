@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogicForge — Interactive Digital Logic Simulator & Circuit Laboratory</title>
+  <meta name="description" content="Explore Boolean algebra, logic gates, arithmetic circuits, and memory latches with LogicForge — a real-time, interactive circuit simulation lab with automated truth table generation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Main Header Toolbar -->
+    <header id="top-header">
+      <div class="brand-section">
+        <div class="brand-logo" id="brand-logo" aria-label="LogicForge Logo">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 3h3v-3h2v5h-5v-2z" />
+          </svg>
+        </div>
+        <h1 class="brand-title">LogicForge</h1>
+        <span class="brand-badge">Circuit Lab</span>
+      </div>
+
+      <nav class="toolbar-controls" aria-label="Circuit Simulation Controls">
+        <button id="btn-presets" class="btn" title="Explore Presets Library">
+          <span>⚡</span> Presets ▾
+        </button>
+        <select id="preset-selector" class="preset-dropdown" aria-label="Select Circuit Preset" style="display: none;">
+          <option value="">Presets: Loading...</option>
+        </select>
+
+        <div class="toolbar-divider"></div>
+
+        <button id="btn-play-pause" class="btn active" title="Toggle Simulation (Space)">
+          <span>⏸</span> Pause
+        </button>
+        <button id="btn-step" class="btn" title="Single Step (S)">
+          <span>⏭</span> Step
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <button id="btn-truth-table" class="btn btn-primary" title="Generate Truth Table">
+          <span>📊</span> Truth Table
+        </button>
+
+        <button id="btn-center" class="btn" title="Center Circuit (C)">
+          <span>🎯</span> Fit View
+        </button>
+        <button id="btn-clear" class="btn" title="Clear Canvas">
+          <span>🗑</span> Clear
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <button id="btn-sound" class="btn btn-icon-only" title="Toggle Audio Feedback" aria-label="Toggle Sound">
+          <span>🔔</span>
+        </button>
+        <button id="btn-export" class="btn btn-icon-only" title="Import / Export JSON" aria-label="Import/Export JSON">
+          <span>💾</span>
+        </button>
+        <button id="btn-screenshot" class="btn btn-icon-only" title="Save Image (PNG)" aria-label="Export PNG">
+          <span>📷</span>
+        </button>
+        <button id="btn-help" class="btn btn-icon-only" title="Shortcuts & Documentation" aria-label="Help">
+          <span>❓</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Workspace -->
+    <main id="workspace">
+      <!-- Left Component Palette Sidebar -->
+      <aside id="sidebar-palette" aria-label="Component Palette">
+        <div class="sidebar-header">
+          <span>Components Library</span>
+        </div>
+
+        <section class="palette-category">
+          <h2 class="category-title">
+            <span>⚡</span> Inputs & Displays
+          </h2>
+          <div class="category-items" id="palette-io"></div>
+        </section>
+
+        <section class="palette-category">
+          <h2 class="category-title">
+            <span>⎈</span> Elementary Gates
+          </h2>
+          <div class="category-items" id="palette-gates"></div>
+        </section>
+
+        <section class="palette-category">
+          <h2 class="category-title">
+            <span>➕</span> Arithmetic Logic
+          </h2>
+          <div class="category-items" id="palette-arithmetic"></div>
+        </section>
+
+        <section class="palette-category">
+          <h2 class="category-title">
+            <span>💾</span> Memory & Latches
+          </h2>
+          <div class="category-items" id="palette-memory"></div>
+        </section>
+      </aside>
+
+      <!-- Main Canvas Screen -->
+      <section id="canvas-wrapper">
+        <canvas id="circuit-canvas"></canvas>
+
+        <!-- Status & Telemetry Bar -->
+        <footer id="status-bar">
+          <div id="status-metrics">
+            <span>Gates & Nodes: <b>0</b></span>
+            <span>Wires: <b>0</b></span>
+            <span>Zoom: <b>100%</b></span>
+            <span>Sim: <b>Running</b></span>
+          </div>
+          <div class="shortcut-hint">
+            <span><kbd>Space</kbd> Play/Pause</span>
+            <span><kbd>Click Pin</kbd> Wire</span>
+            <span><kbd>Del</kbd> Remove</span>
+            <span><kbd>Ctrl+Z</kbd> Undo</span>
+          </div>
+        </footer>
+      </section>
+    </main>
+
+    <!-- Modal: Presets Explorer -->
+    <div id="modal-presets" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="presets-title">
+      <div class="modal-card modal-card-lg">
+        <header class="modal-header">
+          <h3 id="presets-title" class="modal-title">Logic Circuit Presets & Experiments</h3>
+          <button id="close-presets-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </header>
+        <div class="modal-body">
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">
+            Select a verified computational circuit demonstrating fundamental principles of digital logic and computer architecture:
+          </p>
+          <div class="presets-grid" id="presets-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Truth Table -->
+    <div id="modal-truth-table" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tt-title">
+      <div class="modal-card">
+        <header class="modal-header">
+          <h3 id="tt-title" class="modal-title">Combinational Logic Truth Table</h3>
+          <button id="close-tt-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </header>
+        <div class="modal-body" id="truth-table-content">
+          <!-- Dynamically populated -->
+        </div>
+        <footer class="modal-footer">
+          <p style="font-size: 11px; color: var(--text-dim); margin-right: auto;">
+            Auto-evaluated across all input permutations.
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal: Export & Import JSON -->
+    <div id="modal-export" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="export-title">
+      <div class="modal-card">
+        <header class="modal-header">
+          <h3 id="export-title" class="modal-title">Circuit Architecture (JSON)</h3>
+          <button id="close-export-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </header>
+        <div class="modal-body">
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+            Copy current circuit state or paste circuit JSON below to import.
+          </p>
+          <textarea id="export-json-area" class="code-textarea" spellcheck="false"></textarea>
+        </div>
+        <footer class="modal-footer">
+          <button id="btn-import-apply" class="btn btn-primary">Import JSON to Canvas</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal: Help & Shortcuts -->
+    <div id="modal-help" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="modal-card">
+        <header class="modal-header">
+          <h3 id="help-title" class="modal-title">LogicForge Quick Guide & Shortcuts</h3>
+          <button id="close-help-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </header>
+        <div class="modal-body">
+          <div class="help-grid">
+            <div class="help-section">
+              <h4>Mouse Controls</h4>
+              <ul class="help-list">
+                <li><span>Place Component</span> <b>Click Palette & Click Canvas</b></li>
+                <li><span>Connect Wire</span> <b>Drag from Pin to Pin</b></li>
+                <li><span>Toggle Switch / Button</span> <b>Click Component Body</b></li>
+                <li><span>Pan Canvas</span> <b>Middle Mouse or Wheel Drag</b></li>
+                <li><span>Zoom In / Out</span> <b>Scroll Wheel</b></li>
+                <li><span>Multi-Select</span> <b>Drag Selection Marquee</b></li>
+              </ul>
+            </div>
+            <div class="help-section">
+              <h4>Keyboard Shortcuts</h4>
+              <ul class="help-list">
+                <li><span>Play / Pause</span> <kbd>Space</kbd></li>
+                <li><span>Step 1 Cycle</span> <kbd>S</kbd></li>
+                <li><span>Delete Selected</span> <kbd>Delete</kbd> / <kbd>Backspace</kbd></li>
+                <li><span>Undo / Redo</span> <kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd></li>
+                <li><span>Center / Fit View</span> <kbd>C</kbd></li>
+                <li><span>Cancel Wire / Deselect</span> <kbd>Esc</kbd></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
