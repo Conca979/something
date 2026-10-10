@@ -98,7 +98,7 @@ npx -y serve .
 ## 📁 Project Architecture
 
 ```
-something/
+logicforge/
 ├── index.html                  # Accessible, SEO-optimized markup & HUD layout
 ├── css/
 │   └── style.css               # Obsidian glassmorphic design system & typography
